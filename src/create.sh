@@ -51,11 +51,12 @@ _create_base() {
 }
 
 _add_shell_templates() {
-    echo "#!/usr/bin/env sh" >> "$PROJECT_DIR/script.sh"
-    echo "" >> "$PROJECT_DIR/script.sh"
-    echo "set -eux" >> "$PROJECT_DIR/script.sh"
-    echo "set -o | grep -q pipefail && set -o pipefail" >> "$PROJECT_DIR/script.sh"
-    echo "" >> "$PROJECT_DIR/script.sh"
+    cat >> "$PROJECT_DIR/script.sh" <<EOT
+#!/usr/bin/env sh
+
+set -eux
+set -o | grep -q pipefail && set -o pipefail
+EOT
 }
 
 create_shell_tool() {
@@ -64,12 +65,13 @@ create_shell_tool() {
 }
 
 _add_python_templates() {
-    echo "def _main() -> None:" >> "$PROJECT_DIR/app.sh"
-    echo "    ..." >> "$PROJECT_DIR/app.sh"
-    echo "" >> "$PROJECT_DIR/app.sh"
-    echo "if __name__ == '__main__':" >> "$PROJECT_DIR/app.sh"
-    echo "    _main()" >> "$PROJECT_DIR/app.sh"
-    echo "" >> "$PROJECT_DIR/app.sh"
+    cat >> "$PROJECT_DIR/app.py" <<EOT
+def _main() -> None:
+    ...
+
+if __name__ == '__main__':
+    _main()
+EOT
 }
 
 create_python_tool() {
@@ -78,11 +80,12 @@ create_python_tool() {
 }
 
 _add_poetry_templates() {
-    echo "[virtualenvs]" >> "$PROJECT_DIR/poetry.toml"
-    echo "create = true" >> "$PROJECT_DIR/poetry.toml"
-    echo "in-project = true" >> "$PROJECT_DIR/poetry.toml"
-    echo "path = \".venv\"" >> "$PROJECT_DIR/poetry.toml"
-    echo "" >> "$PROJECT_DIR/poetry.toml"
+    cat >> "$PROJECT_DIR/poetry.toml" <<EOT
+[virtualenvs]
+create = true
+in-project = true
+path = ".venv"
+EOT
 }
 
 _create_python_base() {
@@ -122,10 +125,31 @@ create_django_app() {
     cd "$PREV_DIR"
 }
 
+_add_fastapi_templates() {
+    mkdir -p "$PROJECT_DIR/src/"
+    cat >> "$PROJECT_DIR/src/main.py" <<EOT
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get('/ping')
+async def ping() -> str:
+    return 'pong'
+EOT
+}
+
 create_fastapi_app() {
     _create_python_base
 
-    # TODO: implement
+    PREV_DIR=$( pwd )
+    cd "$PROJECT_DIR"
+
+    poetry add fastapi uvicorn[standard]
+
+    cd "$PREV_DIR"
+
+    _add_fastapi_templates
 }
 
 create
